@@ -49,7 +49,7 @@ class RecetaMXCoreTests(unittest.TestCase):
                 },
                 "items": [
                     {
-                        "code": "RXMX-DEMO-AMOX",
+                        "code": "RXMX-DEMO-AMOX-500-CAP",
                         "generic_name": generic,
                         "form": "CÁPSULA",
                         "strength": "500 mg",
@@ -166,3 +166,26 @@ class RecetaMXCoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class MedicationCatalogTests(unittest.TestCase):
+    def test_catalog_search_and_lookup(self):
+        from recetamx.catalog import CATALOG
+
+        results = CATALOG.search("amoxicilina")
+        self.assertGreaterEqual(len(results), 2)
+        self.assertEqual(results[0]["generic_name"], "AMOXICILINA")
+        item = CATALOG.get("RXMX-DEMO-MORF-10-TAB")
+        self.assertEqual(item["controlled_group"], "ESTUPEFACIENTE")
+
+    def test_catalog_rejects_mismatched_fraction(self):
+        from recetamx.catalog import CATALOG
+
+        with self.assertRaises(ValueError):
+            CATALOG.validate_item(
+                {
+                    "code": "RXMX-DEMO-MORF-10-TAB",
+                    "generic_name": "MORFINA",
+                    "sale_fraction": "VI",
+                    "controlled_group": "ESTUPEFACIENTE",
+                }
+            )

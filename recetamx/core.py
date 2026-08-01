@@ -13,7 +13,7 @@ from typing import Any, Iterable
 
 UTC = timezone.utc
 SCHEMA_VERSION = "receta-mx-alpha-0.1.0"
-CATALOG_VERSION = "demo-2026-07"
+from .catalog import CATALOG, CATALOG_VERSION, DEMO_CATALOG
 
 PROFESSIONS = {
     "MEDICO",
@@ -47,30 +47,6 @@ MEDICATION_WARNINGS = {
     "INSULINA": ["Riesgo de hipoglucemia; verificar presentación, concentración y dispositivo."],
     "MORFINA": ["Opioide: riesgo de depresión respiratoria, sedación y dependencia."],
 }
-
-DEMO_CATALOG = [
-    {
-        "code": "RXMX-DEMO-AMOX",
-        "generic_name": "AMOXICILINA",
-        "sale_fraction": "IV",
-        "controlled_group": "NONE",
-        "authoritative": False,
-    },
-    {
-        "code": "RXMX-DEMO-WARF",
-        "generic_name": "WARFARINA",
-        "sale_fraction": "IV",
-        "controlled_group": "NONE",
-        "authoritative": False,
-    },
-    {
-        "code": "RXMX-DEMO-MORF",
-        "generic_name": "MORFINA",
-        "sale_fraction": "I",
-        "controlled_group": "ESTUPEFACIENTE",
-        "authoritative": False,
-    },
-]
 
 
 class RecetaMXError(Exception):
@@ -516,17 +492,30 @@ def require_session(conn: sqlite3.Connection, token: str | None, expected_type: 
 
 
 def _validate_item_for_prescriber(item: dict[str, Any], prescriber: sqlite3.Row) -> dict[str, Any]:
-    generic_name = normalize_name(item.get("generic_name", ""))
+    catalog_item = None
+    if item.get("code"):
+        try:
+            catalog_item = CATALOG.validate_item(item)
+        except ValueError as exc:
+            raise RecetaMXError(str(exc), 409, "catalog_mismatch") from exc
+        if catalog_item is None:
+            raise RecetaMXError(
+                "El código no existe en la versión activa del catálogo.",
+                422,
+                "catalog_code_unknown",
+            )
+    source = {**(catalog_item or {}), **item}
+    generic_name = normalize_name(source.get("generic_name", ""))
     if not generic_name:
         raise RecetaMXError("Cada medicamento requiere denominación genérica.")
-    sale_fraction = normalize_name(item.get("sale_fraction", "IV"))
-    controlled_group = normalize_name(item.get("controlled_group", "NONE"))
+    sale_fraction = normalize_name(source.get("sale_fraction", "IV"))
+    controlled_group = normalize_name(source.get("controlled_group", "NONE"))
     if sale_fraction not in SALE_FRACTIONS:
         raise RecetaMXError(f"Fracción de venta inválida: {sale_fraction}")
     if controlled_group not in CONTROLLED_GROUPS:
         raise RecetaMXError(f"Grupo controlado inválido: {controlled_group}")
     try:
-        quantity = float(item.get("quantity_prescribed"))
+        quantity = float(source.get("quantity_prescribed"))
     except (TypeError, ValueError) as exc:
         raise RecetaMXError("Cantidad prescrita inválida.") from exc
     if quantity <= 0:
@@ -544,33 +533,33 @@ def _validate_item_for_prescriber(item: dict[str, Any], prescriber: sqlite3.Row)
         )
     if prescriber["profession"] == "LIC_ENFERMERIA":
         allowed_codes = set(attrs.get("allowed_drug_codes") or [])
-        if not item.get("code") or item.get("code") not in allowed_codes:
+        if not source.get("code") or source.get("code") not in allowed_codes:
             raise RecetaMXError(
                 "El medicamento no está dentro del catálogo habilitado para enfermería.",
                 403,
                 "nursing_catalog_denied",
             )
-    refills = int(item.get("refills_authorized", 0) or 0)
+    refills = int(source.get("refills_authorized", 0) or 0)
     if controlled_group in {"ESTUPEFACIENTE", "PSICOTROPICO_II", "PSICOTROPICO_III"} and refills > 0:
         raise RecetaMXError("Este grupo controlado no admite resurtidos en la alpha.")
     if controlled_group == "PSICOTROPICO_IV" and refills > 2:
         raise RecetaMXError("Psicotrópico IV admite como máximo dos resurtidos adicionales.")
 
     return {
-        "code": item.get("code"),
+        "code": source.get("code"),
         "generic_name": generic_name,
-        "brand_requested": normalize_name(item.get("brand_requested", "")) or None,
-        "form": str(item.get("form") or "NO ESPECIFICADA").strip(),
-        "strength": str(item.get("strength") or "NO ESPECIFICADA").strip(),
-        "dose": str(item.get("dose") or "NO ESPECIFICADA").strip(),
-        "route": str(item.get("route") or "NO ESPECIFICADA").strip(),
-        "frequency": str(item.get("frequency") or "NO ESPECIFICADA").strip(),
-        "duration_days": int(item["duration_days"]) if item.get("duration_days") is not None else None,
+        "brand_requested": normalize_name(source.get("brand_requested", "")) or None,
+        "form": str(source.get("form") or "NO ESPECIFICADA").strip(),
+        "strength": str(source.get("strength") or "NO ESPECIFICADA").strip(),
+        "dose": str(source.get("dose") or "NO ESPECIFICADA").strip(),
+        "route": str(source.get("route") or "NO ESPECIFICADA").strip(),
+        "frequency": str(source.get("frequency") or "NO ESPECIFICADA").strip(),
+        "duration_days": int(source["duration_days"]) if source.get("duration_days") is not None else None,
         "quantity_prescribed": quantity,
         "sale_fraction": sale_fraction,
         "controlled_group": controlled_group,
         "refills_authorized": refills,
-        "substitution_allowed": bool(item.get("substitution_allowed", True)),
+        "substitution_allowed": bool(source.get("substitution_allowed", True)),
         "warnings": MEDICATION_WARNINGS.get(generic_name, []),
     }
 

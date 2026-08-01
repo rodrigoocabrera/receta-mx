@@ -10,9 +10,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
+from .catalog import CATALOG, CATALOG_VERSION
 from .core import (
-    CATALOG_VERSION,
-    DEMO_CATALOG,
     RecetaMXError,
     bootstrap_demo,
     connect,
@@ -140,7 +139,33 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 return
             if path == "/api/catalog":
-                self._send_json({"version": CATALOG_VERSION, "items": DEMO_CATALOG, "authoritative": False})
+                query_text = (query.get("q") or [""])[0]
+                sale_fraction = (query.get("sale_fraction") or [None])[0]
+                controlled_group = (query.get("controlled_group") or [None])[0]
+                limit = int((query.get("limit") or ["20"])[0])
+                items = CATALOG.search(
+                    query_text,
+                    sale_fraction=sale_fraction,
+                    controlled_group=controlled_group,
+                    limit=limit,
+                )
+                self._send_json(
+                    {
+                        "metadata": CATALOG.metadata.__dict__,
+                        "query": query_text,
+                        "count": len(items),
+                        "items": items,
+                    }
+                )
+                return
+
+            catalog_match = re.fullmatch(r"/api/catalog/([^/]+)", path)
+            if catalog_match:
+                item = CATALOG.get(unquote(catalog_match.group(1)))
+                if not item:
+                    self._send_json({"error": "not_found", "message": "Medicamento no encontrado."}, 404)
+                    return
+                self._send_json({"metadata": CATALOG.metadata.__dict__, "item": item})
                 return
 
             verify_match = re.fullmatch(r"/api/prescriptions/([^/]+)", path)

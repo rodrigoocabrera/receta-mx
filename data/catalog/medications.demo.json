@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "catalog_id": "receta-mx-medications-demo",
+    "version": "demo-2026-08-01",
+    "status": "demonstration",
+    "authoritative": false,
+    "source_name": "Catálogo sintético Receta MX",
+    "source_url": "https://github.com/rodrigoocabrera/receta-mx",
+    "published_at": "2026-08-01",
+    "valid_from": "2026-08-01",
+    "jurisdiction": "MX"
+  },
+  "items": [
+    {"code":"RXMX-DEMO-AMOX-500-CAP","generic_name":"AMOXICILINA","form":"CÁPSULA","strength":"500 mg","route":"ORAL","presentation":"Envase con 12 cápsulas","sale_fraction":"IV","controlled_group":"NONE","atc_code":"J01CA04","requires_prescription":true,"refill_policy":"NEW_PRESCRIPTION","source_record_id":"DEMO-001"},
+    {"code":"RXMX-DEMO-AMOX-250-SUS","generic_name":"AMOXICILINA","form":"SUSPENSIÓN ORAL","strength":"250 mg/5 mL","route":"ORAL","presentation":"Frasco con 75 mL","sale_fraction":"IV","controlled_group":"NONE","atc_code":"J01CA04","requires_prescription":true,"refill_policy":"NEW_PRESCRIPTION","source_record_id":"DEMO-002"},
+    {"code":"RXMX-DEMO-PARA-500-TAB","generic_name":"PARACETAMOL","form":"TABLETA","strength":"500 mg","route":"ORAL","presentation":"Envase con 20 tabletas","sale_fraction":"VI","controlled_group":"NONE","atc_code":"N02BE01","requires_prescription":false,"refill_policy":"NOT_APPLICABLE","source_record_id":"DEMO-003"},
+    {"code":"RXMX-DEMO-IBUP-400-TAB","generic_name":"IBUPROFENO","form":"TABLETA","strength":"400 mg","route":"ORAL","presentation":"Envase con 20 tabletas","sale_fraction":"VI","controlled_group":"NONE","atc_code":"M01AE01","requires_prescription":false,"refill_policy":"NOT_APPLICABLE","source_record_id":"DEMO-004"},
+    {"code":"RXMX-DEMO-WARF-5-TAB","generic_name":"WARFARINA","form":"TABLETA","strength":"5 mg","route":"ORAL","presentation":"Envase con 25 tabletas","sale_fraction":"IV","controlled_group":"NONE","atc_code":"B01AA03","requires_prescription":true,"refill_policy":"NEW_PRESCRIPTION","source_record_id":"DEMO-005"},
+    {"code":"RXMX-DEMO-METF-850-TAB","generic_name":"METFORMINA","form":"TABLETA","strength":"850 mg","route":"ORAL","presentation":"Envase con 30 tabletas","sale_fraction":"IV","controlled_group":"NONE","atc_code":"A10BA02","requires_prescription":true,"refill_policy":"AS_AUTHORIZED","source_record_id":"DEMO-006"},
+    {"code":"RXMX-DEMO-LOS-50-TAB","generic_name":"LOSARTÁN","form":"TABLETA","strength":"50 mg","route":"ORAL","presentation":"Envase con 30 tabletas","sale_fraction":"IV","controlled_group":"NONE","atc_code":"C09CA01","requires_prescription":true,"refill_policy":"AS_AUTHORIZED","source_record_id":"DEMO-007"},
+    {"code":"RXMX-DEMO-CLAR-500-TAB","generic_name":"CLARITROMICINA","form":"TABLETA","strength":"500 mg","route":"ORAL","presentation":"Envase con 10 tabletas","sale_fraction":"IV","controlled_group":"NONE","atc_code":"J01FA09","requires_prescription":true,"refill_policy":"NEW_PRESCRIPTION","source_record_id":"DEMO-008"},
+    {"code":"RXMX-DEMO-SIMV-20-TAB","generic_name":"SIMVASTATINA","form":"TABLETA","strength":"20 mg","route":"ORAL","presentation":"Envase con 30 tabletas","sale_fraction":"IV","controlled_group":"NONE","atc_code":"C10AA01","requires_prescription":true,"refill_policy":"AS_AUTHORIZED","source_record_id":"DEMO-009"},
+    {"code":"RXMX-DEMO-MORF-10-TAB","generic_name":"MORFINA","form":"TABLETA","strength":"10 mg","route":"ORAL","presentation":"Envase con 20 tabletas","sale_fraction":"I","controlled_group":"ESTUPEFACIENTE","atc_code":"N02AA01","requires_prescription":true,"refill_policy":"PROHIBITED","source_record_id":"DEMO-010"},
+    {"code":"RXMX-DEMO-CLON-2-TAB","generic_name":"CLONAZEPAM","form":"TABLETA","strength":"2 mg","route":"ORAL","presentation":"Envase con 30 tabletas","sale_fraction":"II","controlled_group":"PSICOTROPICO_II","atc_code":"N03AE01","requires_prescription":true,"refill_policy":"REGULATED","source_record_id":"DEMO-011"},
+    {"code":"RXMX-DEMO-ALPR-0.5-TAB","generic_name":"ALPRAZOLAM","form":"TABLETA","strength":"0.5 mg","route":"ORAL","presentation":"Envase con 30 tabletas","sale_fraction":"III","controlled_group":"PSICOTROPICO_III","atc_code":"N05BA12","requires_prescription":true,"refill_policy":"REGULATED","source_record_id":"DEMO-012"}
+  ]
+}

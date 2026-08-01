@@ -18,7 +18,7 @@ Definir una representación nacional, abierta e interoperable de la receta elect
 
 - **Autoridad sanitaria:** define catálogos, permisos, sanciones, reglas y supervisión.
 - **Registro Nacional de Prescriptores:** asigna el Número Nacional de Prescriptor y publica atributos verificables.
-- **PACR:** valida identidad, e.firma, cédula, prueba de vida, revisión automatizada y manual; certifica recetas y reporta eventos.
+- **PARC:** proveedor autorizado que enrola y verifica identidad, e.firma, cédula, prueba de vida y atributos; certifica la integridad de recetas y reporta eventos. No diagnostica, prescribe ni modifica el contenido clínico.
 - **Prescriptor:** profesional autorizado conforme a la LGS y su ámbito de competencia.
 - **Farmacia:** establecimiento autorizado para dispensar las fracciones que correspondan.
 - **Personal de farmacia:** persona identificada individualmente, autenticada y vinculada a una farmacia.
@@ -77,7 +77,7 @@ Los atributos deben ser explícitos y verificables. Ejemplo:
 }
 ```
 
-Los catálogos de fracciones, sustancias y productos deben venir de una fuente autoritativa versionada. Ningún PACR puede autodeclarar permisos de controlados.
+Los catálogos de fracciones, sustancias y productos deben venir de una fuente autoritativa versionada. Ningún PARC puede autodeclarar permisos de controlados: sólo aplica atributos emitidos o reconocidos por la autoridad y el registro nacional.
 
 ## 7. Identidad del paciente
 

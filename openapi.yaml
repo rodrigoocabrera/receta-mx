@@ -92,6 +92,35 @@ paths:
           schema: {type: string}
       responses:
         '200': {description: Historial mínimo autorizado}
+  /api/catalog:
+    get:
+      summary: Busca conceptos prescribibles en el catálogo activo
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: sale_fraction
+          schema: { type: string }
+        - in: query
+          name: controlled_group
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200': { description: Resultados y metadatos de procedencia }
+  /api/catalog/{code}:
+    get:
+      summary: Obtiene un concepto prescribible por código
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Concepto encontrado }
+        '404': { description: Código desconocido }
 components:
   securitySchemes:
     bearerAuth:
