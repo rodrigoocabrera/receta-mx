@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Receta MX Alpha</title>
+  <style>
+    :root { --ink:#0e1a2b; --muted:#5e6a7a; --line:#dbe2ea; --paper:#fff; --wash:#f4f7fa; --accent:#0a6b58; --danger:#9b2c2c; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--wash); }
+    header { padding:32px 24px; background:linear-gradient(135deg,#0e1a2b,#183a42); color:white; }
+    header .wrap, main { max-width:1180px; margin:auto; }
+    h1 { margin:0 0 8px; font-size:clamp(2rem,5vw,4rem); letter-spacing:-.04em; }
+    header p { max-width:820px; color:#dce8e7; line-height:1.6; }
+    .badge { display:inline-block; border:1px solid #79b8a9; padding:5px 10px; border-radius:999px; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+    main { padding:24px; }
+    .notice { background:#fff8df; border:1px solid #ead894; padding:14px 16px; border-radius:12px; margin-bottom:18px; line-height:1.5; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:18px; }
+    section { background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(14,26,43,.05); }
+    h2 { margin:0 0 8px; font-size:1.2rem; }
+    p.small { color:var(--muted); font-size:.9rem; line-height:1.45; }
+    label { display:block; margin:12px 0 5px; font-size:.82rem; font-weight:650; }
+    input, select, textarea { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:white; color:var(--ink); font:inherit; }
+    textarea { min-height:96px; resize:vertical; }
+    button { margin-top:14px; border:0; background:var(--accent); color:white; padding:11px 15px; border-radius:9px; font-weight:700; cursor:pointer; }
+    button.secondary { background:#334155; }
+    button.danger { background:var(--danger); }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#0b1220; color:#e8edf4; border-radius:12px; padding:14px; min-height:72px; font-size:.78rem; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .wide { grid-column:1 / -1; }
+    .token { overflow-wrap:anywhere; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.78rem; background:#eef7f4; padding:8px; border-radius:8px; }
+    footer { max-width:1180px; margin:0 auto; padding:12px 24px 40px; color:var(--muted); font-size:.85rem; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <span class="badge">Referencia abierta · Alpha 0.1</span>
+    <h1>Receta MX</h1>
+    <p>Prototipo funcional del estándar mexicano de prescripción electrónica: identidad del prescriptor, folio verificable, control de surtimientos, acceso auditado por farmacia, interoperabilidad público–privada y exportación compatible con recursos FHIR.</p>
+  </div>
+</header>
+<main>
+  <div class="notice"><strong>No es una NOM ni una plataforma autorizada por COFEPRIS.</strong> Esta implementación sirve para discusión técnica, pruebas de integración y desarrollo normativo. Los catálogos y verificaciones gubernamentales son simulados.</div>
+  <div class="grid">
+    <section>
+      <h2>1. Preparar demostración</h2>
+      <p class="small">Crea un médico, una farmacia, una persona dispensadora y un paciente rural sintéticos.</p>
+      <label>Clave de operador</label><input id="operatorKey" value="dev-operator-key">
+      <button onclick="bootstrap()">Crear datos demo</button>
+      <pre id="bootstrapOut"></pre>
+    </section>
+
+    <section>
+      <h2>2. Iniciar sesión</h2>
+      <div class="row">
+        <div><label>Tipo</label><select id="actorType"><option value="PRESCRIBER">Prescriptor</option><option value="PHARMACY_USER">Personal de farmacia</option></select></div>
+        <div><label>Identificador</label><input id="loginId" value="MEDD900101HDFMXX09"></div>
+      </div>
+      <label>Contraseña</label><input id="loginPassword" type="password" value="demo-medico">
+      <button onclick="loginActor()">Iniciar sesión</button>
+      <p class="small">Token activo:</p><div class="token" id="activeToken">Sin sesión</div>
+      <pre id="loginOut"></pre>
+    </section>
+
+    <section class="wide">
+      <h2>3. Emitir receta</h2>
+      <p class="small">Inicia sesión como prescriptor. La receta queda vinculada a un identificador del paciente y genera un token de verificación.</p>
+      <div class="row">
+        <div><label>Tipo de identificador</label><select id="patientIdType"><option>TEMP_RURAL</option><option>CURP</option><option>NEWBORN</option><option>FOREIGN</option><option>OTHER</option></select></div>
+        <div><label>Identificador</label><input id="patientId" value="RURAL-DEMO-001"></div>
+        <div><label>Nombre del paciente</label><input id="patientName" value="Paciente Demo Rural"></div>
+        <div><label>Diagnóstico / código</label><input id="diagnosis" value="DEMO"></div>
+      </div>
+      <div class="row">
+        <div><label>Medicamento genérico</label><input id="genericName" value="AMOXICILINA"></div>
+        <div><label>Código de catálogo</label><input id="drugCode" value="RXMX-DEMO-AMOX"></div>
+        <div><label>Forma</label><input id="form" value="CÁPSULA"></div>
+        <div><label>Concentración</label><input id="strength" value="500 mg"></div>
+        <div><label>Dosis</label><input id="dose" value="1 cápsula"></div>
+        <div><label>Frecuencia</label><input id="frequency" value="cada 8 horas"></div>
+        <div><label>Vía</label><input id="route" value="oral"></div>
+        <div><label>Cantidad</label><input id="quantity" type="number" value="21"></div>
+        <div><label>Fracción de venta</label><select id="saleFraction"><option>I</option><option>II</option><option>III</option><option selected>IV</option><option>V</option><option>VI</option></select></div>
+        <div><label>Grupo controlado</label><select id="controlledGroup"><option selected>NONE</option><option>ESTUPEFACIENTE</option><option>PSICOTROPICO_II</option><option>PSICOTROPICO_III</option><option>PSICOTROPICO_IV</option></select></div>
+      </div>
+      <label>Nota clínica mínima</label><textarea id="clinicalNote">Prototipo de interoperabilidad; no usar para atención real.</textarea>
+      <div class="row">
+        <div><label>Origen</label><select id="publicOrigin"><option value="false">Privado</option><option value="true">Público</option></select></div>
+        <div><label>Ruta de surtimiento</label><select id="fulfillmentRoute"><option>ANY_AUTHORIZED_PHARMACY</option><option>PUBLIC_FIRST_PRIVATE_FALLBACK</option><option>PUBLIC_ONLY</option><option>PRIVATE_ONLY</option></select></div>
+      </div>
+      <button onclick="issueRx()">Emitir receta</button>
+      <pre id="issueOut"></pre>
+    </section>
+
+    <section>
+      <h2>4. Verificar receta</h2>
+      <label>Folio</label><input id="verifyFolio">
+      <label>Token</label><input id="verifyToken">
+      <button onclick="verifyRx()">Verificar</button>
+      <button class="secondary" onclick="openQr()">Abrir QR / payload</button>
+      <pre id="verifyOut"></pre>
+    </section>
+
+    <section>
+      <h2>5. Historial reciente en farmacia</h2>
+      <p class="small">Inicia sesión como personal de farmacia. Se registra la CURP de quien consulta y se exige código del paciente.</p>
+      <label>Tipo de identificador</label><select id="recentType"><option>TEMP_RURAL</option><option>CURP</option></select>
+      <label>Identificador</label><input id="recentId" value="RURAL-DEMO-001">
+      <label>Código del paciente</label><input id="patientCode" value="123456">
+      <button onclick="recentRx()">Consultar hasta 10 recetas</button>
+      <pre id="recentOut"></pre>
+    </section>
+
+    <section>
+      <h2>6. Registrar surtimiento</h2>
+      <p class="small">Marca, lote y cantidad son obligatorios. La plataforma calcula el remanente y cierra la receta cuando se completa.</p>
+      <label>Folio</label><input id="dispenseFolio">
+      <div class="row">
+        <div><label>Partida</label><input id="lineNo" type="number" value="1"></div>
+        <div><label>Cantidad surtida</label><input id="dispenseQty" type="number" value="21"></div>
+        <div><label>Marca surtida</label><input id="dispenseBrand" value="GENÉRICO DEMO"></div>
+        <div><label>Lote</label><input id="lot" value="LOT-DEMO-001"></div>
+      </div>
+      <label>Modo</label><select id="dispenseMode"><option>FULL</option><option>PARTIAL</option><option>REFILL</option><option>PUBLIC_SHORTAGE_TRANSFER</option></select>
+      <button onclick="dispenseRx()">Registrar surtimiento</button>
+      <pre id="dispenseOut"></pre>
+    </section>
+
+    <section>
+      <h2>7. Exportación FHIR-like</h2>
+      <p class="small">Bundle de referencia con Patient, Practitioner y MedicationRequest. No afirma conformidad certificada.</p>
+      <button onclick="fhirRx()">Exportar receta verificada</button>
+      <pre id="fhirOut"></pre>
+    </section>
+  </div>
+</main>
+<footer>Receta MX Alpha · Código abierto · Datos demo sintéticos · Privacidad por diseño y trazabilidad obligatoria.</footer>
+<script>
+let sessionToken = localStorage.getItem('rxmx_token') || '';
+let sessionType = localStorage.getItem('rxmx_type') || '';
+const $ = id => document.getElementById(id);
+$('activeToken').textContent = sessionToken ? `${sessionType}: ${sessionToken}` : 'Sin sesión';
+
+async function api(path, options={}) {
+  const headers = {'Content-Type':'application/json', ...(options.headers||{})};
+  if (sessionToken) headers.Authorization = `Bearer ${sessionToken}`;
+  const response = await fetch(path, {...options, headers});
+  const text = await response.text();
+  let data; try { data = JSON.parse(text); } catch { data = text; }
+  if (!response.ok) throw new Error(typeof data === 'string' ? data : JSON.stringify(data, null, 2));
+  return data;
+}
+function show(id, value) { $(id).textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2); }
+
+async function bootstrap() {
+  try { show('bootstrapOut', await api('/api/operator/bootstrap',{method:'POST',headers:{'X-Operator-Key':$('operatorKey').value},body:'{}'})); }
+  catch(e){ show('bootstrapOut', e.message); }
+}
+async function loginActor() {
+  try {
+    const result = await api('/api/auth/login',{method:'POST',body:JSON.stringify({actor_type:$('actorType').value,identifier:$('loginId').value,password:$('loginPassword').value})});
+    sessionToken = result.token; sessionType = result.actor_type;
+    localStorage.setItem('rxmx_token',sessionToken); localStorage.setItem('rxmx_type',sessionType);
+    $('activeToken').textContent = `${sessionType}: ${sessionToken}`; show('loginOut',result);
+  } catch(e){ show('loginOut',e.message); }
+}
+async function issueRx() {
+  try {
+    const result = await api('/api/prescriptions',{method:'POST',body:JSON.stringify({
+      patient:{identifier_type:$('patientIdType').value,identifier_value:$('patientId').value,full_name:$('patientName').value},
+      diagnosis_code:$('diagnosis').value,clinical_note:$('clinicalNote').value,public_origin:$('publicOrigin').value==='true',
+      fulfillment_route:$('fulfillmentRoute').value,payer_type:'PATIENT',
+      items:[{code:$('drugCode').value,generic_name:$('genericName').value,form:$('form').value,strength:$('strength').value,dose:$('dose').value,route:$('route').value,frequency:$('frequency').value,quantity_prescribed:Number($('quantity').value),sale_fraction:$('saleFraction').value,controlled_group:$('controlledGroup').value,refills_authorized:0,substitution_allowed:true}]
+    })});
+    $('verifyFolio').value=result.folio; $('verifyToken').value=result.verification_token; $('dispenseFolio').value=result.folio; show('issueOut',result);
+  } catch(e){ show('issueOut',e.message); }
+}
+async function verifyRx() {
+  try { show('verifyOut', await api(`/api/prescriptions/${encodeURIComponent($('verifyFolio').value)}?token=${encodeURIComponent($('verifyToken').value)}`)); }
+  catch(e){ show('verifyOut',e.message); }
+}
+function openQr(){ window.open(`/api/prescriptions/${encodeURIComponent($('verifyFolio').value)}/qr.svg?token=${encodeURIComponent($('verifyToken').value)}`,'_blank'); }
+async function recentRx(){
+  try { show('recentOut', await api(`/api/patients/${encodeURIComponent($('recentId').value)}/recent?identifier_type=${encodeURIComponent($('recentType').value)}&access_code=${encodeURIComponent($('patientCode').value)}&limit=10`)); }
+  catch(e){ show('recentOut',e.message); }
+}
+async function dispenseRx(){
+  try { show('dispenseOut', await api(`/api/prescriptions/${encodeURIComponent($('dispenseFolio').value)}/dispense`,{method:'POST',body:JSON.stringify({mode:$('dispenseMode').value,is_public_transfer:$('dispenseMode').value==='PUBLIC_SHORTAGE_TRANSFER',items:[{line_no:Number($('lineNo').value),quantity:Number($('dispenseQty').value),brand:$('dispenseBrand').value,lot_number:$('lot').value}]})})); }
+  catch(e){ show('dispenseOut',e.message); }
+}
+async function fhirRx(){
+  try { show('fhirOut', await api(`/api/prescriptions/${encodeURIComponent($('verifyFolio').value)}/fhir?token=${encodeURIComponent($('verifyToken').value)}`)); }
+  catch(e){ show('fhirOut',e.message); }
+}
+</script>
+</body>
+</html>

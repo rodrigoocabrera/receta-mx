@@ -1,0 +1,99 @@
+openapi: 3.1.0
+info:
+  title: Receta MX Alpha API
+  version: 0.1.0-alpha
+  description: API de referencia no autorizada para pruebas del estándar Receta MX.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/status:
+    get:
+      summary: Estado del servicio
+      responses:
+        '200': {description: Operación normal}
+  /api/operator/bootstrap:
+    post:
+      summary: Crea datos demo sintéticos
+      parameters:
+        - in: header
+          name: X-Operator-Key
+          required: true
+          schema: {type: string}
+      responses:
+        '201': {description: Datos creados}
+  /api/auth/login:
+    post:
+      summary: Autentica prescriptor o personal de farmacia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [actor_type, identifier, password]
+              properties:
+                actor_type: {enum: [PRESCRIBER, PHARMACY_USER]}
+                identifier: {type: string}
+                password: {type: string, format: password}
+      responses:
+        '200': {description: Sesión creada}
+  /api/prescriptions:
+    post:
+      summary: Emite una receta
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: './schemas/prescription.schema.json'}
+      responses:
+        '201': {description: Receta emitida}
+  /api/prescriptions/{folio}:
+    get:
+      summary: Verifica y obtiene una receta
+      parameters:
+        - in: path
+          name: folio
+          required: true
+          schema: {type: string}
+        - in: query
+          name: token
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Receta válida}
+  /api/prescriptions/{folio}/dispense:
+    post:
+      summary: Registra surtimiento
+      security: [{bearerAuth: []}]
+      parameters:
+        - in: path
+          name: folio
+          required: true
+          schema: {type: string}
+      responses:
+        '201': {description: Surtimiento registrado}
+  /api/patients/{identifier}/recent:
+    get:
+      summary: Consulta auditada de hasta diez recetas recientes
+      security: [{bearerAuth: []}]
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema: {type: string}
+        - in: query
+          name: identifier_type
+          required: true
+          schema: {type: string}
+        - in: query
+          name: access_code
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Historial mínimo autorizado}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "receta-mx"
+version = "0.1.0a1"
+description = "Implementación de referencia abierta para receta electrónica interoperable en México"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Receta MX contributors" }]
+keywords = ["salud", "receta-electronica", "mexico", "interoperabilidad", "fhir"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+[project.optional-dependencies]
+qr = ["qrcode>=7.4,<9"]
+
+[project.scripts]
+receta-mx = "recetamx.server:main"
+
+[tool.setuptools]
+packages = ["recetamx"]
